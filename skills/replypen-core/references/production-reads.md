@@ -4,20 +4,18 @@ For when the trace shows what the agent saw, but you need a fact it didn't fetch
 
 ## Order of preference
 
-1. **Your product repo's own read-only tooling** (console scripts, admin views, log search) as
-   the local wrapper describes. You know those semantics best.
-2. **The data the run already pulled.** jq the step's `stdout` in the debug JSONL before querying
-   again; it is the exact state the agent reasoned on, at that moment.
-3. **ReplyPen's guarded consoles**, only if the wrapper grants them to your login:
-   `rc dev console capabilities` lists what you may use; `rc dev console database query` and
-   `rc dev console bash run` are read-only by default. Check `--help` for flags; keep queries
-   narrow (IDs, `limit`), verify schema first.
+1. **Local source + run artifacts first.** Read the product source for intended behaviour and the
+   run's debug JSONL (`stdout` of the relevant steps) for observed state, before touching live data.
+2. **The wrapper's preferred authorized production read surface.** Verify profile, project, tenant
+   and principal scope before querying; the wrapper grants policy, the server grants access.
+3. **Other local tools** (console scripts, admin views, log search) only as the wrapper permits.
 
 ## Not a read
 
-- `rc ask "<question>"` **creates a production run**: it costs, is journaled, and may feed the
-  brain's learning loop. Use it only to reproduce agent behaviour, and prefer `--simulation`
-  (nothing placed, no action, no journal) when the wrapper allows `rc ask` at all.
+- `rc ask "<question>"` **creates a production run**: it costs, is journaled, and under the project's
+  configured gates it can place output or execute actions. Use it only to reproduce agent behaviour,
+  and prefer `--simulation` (nothing placed, no action, no journal; it still reads real production
+  data) when the wrapper allows `rc ask` at all.
 - `rc run retry` re-runs a run. Same caution.
 
 ## Never
